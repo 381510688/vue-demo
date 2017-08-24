@@ -19,6 +19,7 @@ const router = new VueRouter({
   mode: 'history',
   routes: [{
     path: '',
+    name: 'app',
     component: App,
     children: [{
       path: '',
@@ -40,6 +41,27 @@ const router = new VueRouter({
     path: '*',
     component: page404
   }]
+});
+
+
+router.beforeEach((to, from, next) => {
+  let overview = '/overview';
+  let slash = '/';
+  // 解决根路径的默认地址
+  let path = to.fullPath === slash ? overview : to.fullPath;
+  // 过滤 '/' 开头的情况
+  let navPath = path[0] === slash ? path.substring(1) : path;
+  // 过滤 '/' 结尾的情况
+  navPath = navPath[navPath.length-1] === slash ? navPath.substring(0, navPath.length-1) : navPath;
+  // 防止中间 '/' 没有的情况
+  let index = navPath.indexOf(slash) === -1 ? navPath.length : navPath.indexOf(slash);
+  // 发送状态
+  router.app.$store.commit('isOverview', {
+    isOverview: path === overview,
+    navRouterPath: navPath.substring(0, index),
+    menuRouterPath: path
+  });
+  next();
 });
 
 export default router;
